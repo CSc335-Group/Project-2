@@ -31,7 +31,7 @@
 
 ;;; CODE
 (define (make-not e)
-  (cond ((and (not (symbol? e)) (not? e)) (list (first-operand e)))
+  (cond ((and (not (symbol? e)) (not? e)) (first-operand e))
         (else (list e '-))))
 
 ;;; --------------------------------------------------------------------------------------------------------------

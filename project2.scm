@@ -5,6 +5,7 @@
 
 ;;; LOAD CONSTRUCTORS/SELECTORS/CLASSIFIERS
 (load "infix_doc.scm")
+;;;(load "prefix_doc.scm")
 
 ;;; PART 1
 ;;; --------------------------------------------------------------------------------------------------------------
