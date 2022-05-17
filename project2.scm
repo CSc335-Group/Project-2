@@ -30,16 +30,11 @@
   (cond ((symbol? e) e)
         ((not (not? e)) ;; if e is not not expr
          (let ((first-op (first-operand e)) (second-op (second-operand e)))
-            (cond ((and (symbol? first-op) (symbol? second-op))
-                   (cond ((or? e) (convert-or e))
-                         ((imply? e) (convert-imply e))
-                         (else e)))
-                  (else (cond ((or? e) (convert-or (make-or (convert-exp first-op) (convert-exp second-op))))
-                              ((imply? e) (convert-imply (make-imply (convert-exp first-op) (convert-exp second-op))))
-                              (else (make-and (convert-exp first-op) (convert-exp second-op))))))))
+           (cond ((or? e) (convert-or (make-or (convert-exp first-op) (convert-exp second-op))))
+                 ((imply? e) (convert-imply (make-imply (convert-exp first-op) (convert-exp second-op))))
+                 (else (make-and (convert-exp first-op) (convert-exp second-op))))))
         (else (let ((first-op (first-operand e)))
-                (cond ((symbol? first-op) e)
-                      (else (make-not (convert-exp first-op))))))))
+                (make-not (convert-exp first-op))))))
 
 (define e1 (make-or 'x 'y))
 (define e2 (make-imply 'x 'z))
@@ -74,10 +69,10 @@
         ((eq? (cdr alist) '()) '()) ;; if x is not in the list
         (else (lookup x (cdr alist)))))
 
-(define l1 '((x #t) (y #f) (z #t)))
-(lookup 'x l1)
-(lookup 'y l1)
-(lookup 'z l1)
+(define l1 '((x #f) (y #f) (z #t)))
+;(lookup 'x l1)
+;(lookup 'y l1)
+;(lookup 'z l1)
 
 ;;; imply function
 (define (imply p q)
@@ -97,5 +92,8 @@
 
 (value '((((x -) ^ (y -)) -) ^ ((x ^ (z -)) -)) l1)
 (value '((x ^ (z -)) -) l1)
+
+(value (convert-exp e7) l1)
+(value (convert-exp e2) l1)
 
 
