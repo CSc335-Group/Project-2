@@ -28,7 +28,7 @@
 
 (define (convert-exp e)
   (cond ((symbol? e) e)
-        ((not (not? e))
+        ((not (not? e)) ;; if e is not not expr
          (let ((first-op (first-operand e)) (second-op (second-operand e)))
             (cond ((and (symbol? first-op) (symbol? second-op))
                    (cond ((or? e) (convert-or e))
@@ -55,13 +55,47 @@
 (convert-exp e5)
 (convert-exp e6)
 (convert-exp e7)
-    
+
+
+;;; ------------------------------------------------------------------------------------------------------------------.
+;;; part 2
+;;; interpreter
+;;;(pair? (cdr '((x #t) (y #t))))
+
+;;;(eq? 'x (car '(x #t)))
+
+;;;(define (tst x)
+;;;  (eq? x (car '(y #t))))
 
 
 
+(define (lookup x alist)
+  (cond ((eq? (caar alist) x) (cadar alist)) ;; if x is in current pair
+        ((eq? (cdr alist) '()) '()) ;; if x is not in the list
+        (else (lookup x (cdr alist)))))
+
+(define l1 '((x #t) (y #f) (z #t)))
+(lookup 'x l1)
+(lookup 'y l1)
+(lookup 'z l1)
+
+;;; imply function
+(define (imply p q)
+  (or (not p) q))
+
+;;; value the expression
+(define (value e alist)
+  (cond ((symbol? e) (lookup e alist))
+        ((not (not? e))
+         (let ((first-op (first-operand e)) (second-op (second-operand e)))
+           (cond ((and? e) (and (value first-op alist) (value second-op alist)))
+                 ((or? e) (or (value first-op alist) (value second-op alist)))
+                 ((imply? e) (imply (value first-op alist) (value second-op alist))))))
+        (else
+         (let ((first-op (first-operand e)))
+           (not (value first-op alist))))))
+
+(value '((((x -) ^ (y -)) -) ^ ((x ^ (z -)) -)) l1)
+(value '((x ^ (z -)) -) l1)
 
 
-
-
-
-    
