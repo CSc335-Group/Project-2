@@ -36,6 +36,8 @@
         (else (let ((first-op (first-operand e)))
                 (make-not (convert-exp first-op))))))
 
+(display "\nconvert-exp Tests\n")
+(display "-----------------------------------------------------------------------\n")
 (define e1 (make-or 'x 'y))
 (define e2 (make-imply 'x 'z))
 (define e3 (make-and 'x 'y))
@@ -50,9 +52,9 @@
 (convert-exp e5)
 (convert-exp e6)
 (convert-exp e7)
+(display "-----------------------------------------------------------------------\n")
 
-
-;;; ------------------------------------------------------------------------------------------------------------------.
+;;; ------------------------------------------------------------------------------------------------------------------
 ;;; part 2
 ;;; interpreter
 ;;;(pair? (cdr '((x #t) (y #t))))
@@ -90,10 +92,39 @@
          (let ((first-op (first-operand e)))
            (not (value first-op alist))))))
 
+(display "\nvalue Tests\n")
+(display "-----------------------------------------------------------------------\n")
+
 (value '((((x -) ^ (y -)) -) ^ ((x ^ (z -)) -)) l1)
 (value '((x ^ (z -)) -) l1)
 
 (value (convert-exp e7) l1)
 (value (convert-exp e2) l1)
 
+(display "-----------------------------------------------------------------------\n")
 
+;;; ------------------------------------------------------------------------------------------------------------------
+;;; USER TOOLS
+
+;;; Specification: function takes in a proposition and an association list and checks if every symbol in the proposition
+;;; appears in the association list. returns #t if all elements are in the assoc. list, #f otherwise
+
+(define (aList-complete e alist)
+  (cond ((symbol? e)
+         (if (eq? (lookup e alist) '()) #f #t))
+        ((not (not? e))
+         (let ((first-op (first-operand e)) (second-op (second-operand e)))
+           (if (and (eq? (aList-complete first-op alist) #t) (eq? (aList-complete second-op alist) #t)) #t #f)))
+        (else (let ((first-op (first-operand e)))
+                (aList-complete first-op alist)))))
+
+(display "\naList-complete Tests\n")
+(display "-----------------------------------------------------------------------\n")
+
+(aList-complete '((((x -) ^ (y -)) -) ^ ((x ^ (z -)) -)) l1)
+(aList-complete '((((x -) ^ (p -)) -) ^ ((x ^ (z -)) -)) l1)
+
+(aList-complete '((x ^ (z -)) -) l1)
+(aList-complete '((x ^ (q -)) -) l1)
+
+(display "-----------------------------------------------------------------------\n")
