@@ -69,34 +69,35 @@
 ;;; A symbol contains no operators so the result is vacuously true
 
 ;;; INDUCTION HYPOTHESIS (IH):
-;;; Assume that for each of the components of the proposition currently under consideration, there is a logically
-;;; equivalent proposition using just AND (^) and NOT (-) operators
+;;; Assume that for each component in the proposition currently under consideration, we have already
+;;; re-written the component into a logically equivalent proposition using just AND (^) and NOT (-) operators
 
 ;;; INDUCTION STEP (IS):
 ;;; Consider a proposition P. There are 4 cases:
 
 ;;; 1. P = (R ^ S); R and S are components
-;;; By the IH, there is a proposition R' that is logically equivalent to R, where R' is expressed using only the
-;;; AND (^) and NOT (-) operators. Similarly, there is a proposition S' that is logically equivalent to S, where S'
-;;; is expressed using only the AND (^) and NOT (-) operators.
-;;; (R ^ S) is then logically equivalent to (R' ^ S') which is already a proposition using only AND (^) and NOT (-)
-;;; operators. We are done with this case.
+;;; By the IH, R' is the re-written proposition that is logically equivalent to R, where R' is expressed using only
+;;; the AND (^) and NOT (-) operators. Similarly, S' is the re-written proposition that is logically equivalent to S,
+;;; where S' is expressed using only the AND (^) and NOT (-) operators.
+;;; (R ^ S) is then logically equivalent to (R' ^ S') so all we need to do is call the make-and constructor on R' and
+;;; S' to re-write (R ^ S).
 
 ;;; 2. P = (R v S)
-;;; Recall that (R v S) is logically equivalent to -(-R ^ -S) which is equivalent to -(-R' ^ -S'), where by the IH,
-;;; R' and S' are logically equivalent propositions to R and S, respectively, using only AND (^) and NOT (-) operators.
-;;; We have just found a logically equivalent proposition to P so we are done with this case.
+;;; (R v S) is logically equivalent to (R' v S'), where by the IH, R' and S' are re-written propositions that are
+;;; logically equivalent to R and S, respectively, using only AND (^) and NOT (-) operators.
+;;; Now, all that's needed to be done is to call convert-or function that will convert (R' v S') to the logically
+;;; equivalent proposition -(-R' ^ -S').
 
 ;;; 3. P = -R
-;;; To reiterate, by the IH, there is a proposition R' that is logically equivalent to R, where R' is expressed
-;;; using only the AND (^) and NOT (-) operators. So, -R is logically equivalent to -R'.
-;;; Since -R' is a proposition using only the AND (^) and NOT (-) operators, we are done with this case.
+;;; To reiterate, by the IH, R' is the re-written proposition that is logically equivalent to R, where R' is
+;;; expressed using only the AND (^) and NOT (-) operators. So, -R is logically equivalent to -R'.
+;;; Then, all that's left to do is to call the make-not constructor on R'.
 
 ;;; 4. P = (R => S)
-;;; Recall that (R => S) is logically equivalent to (-R v S) which in turn is logically equivalent to -(R ^ -S).
-;;; Then, -(R ^ -S) is logically equivalent to -(R' ^ -S'), where by the IH, R' and S' are logically equivalent
-;;; propositions to R and S, respectively, using only AND (^) and NOT (-) operators. Since we have found a logically
-;;; equivalent proposition of P using just AND (^) and NOT (-) operators, we are done with this case.
+;;; (R => S) is logically equivalent to (R' => S'), where by the IH, R' and S' are re-written propositions that are
+;;; logically equivalent to R and S, respectively, using only AND (^) and NOT (-) operators. All that's left now to
+;;; do is to call convert-imply function on (R' => S') to convert it to the logically equivalent proposition
+;;; -(R' ^ -S').
 ;;; ------------------------------------------------------------------------------------------------------------------
 
 
