@@ -4,7 +4,7 @@
 ;;; Spring 2022
 
 
-;;; ALL INPUTS MUST BE CREATED USING THE CONSTRUCTORS
+;;; ALL INPUTTED PROPOSITIONS MUST BE CREATED USING THE CONSTRUCTORS
 ;;; --------------------------------------------------------------------------------------------------------------
 ;;; LOAD CONSTRUCTORS/SELECTORS/CLASSIFIERS
 
