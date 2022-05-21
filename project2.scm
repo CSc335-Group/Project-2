@@ -1,5 +1,5 @@
 ;;; Project 2
-;;; Group member: Baishaki Debi, Yi Lin
+;;; Group members: Baishaki Debi, Yi Lin
 ;;; Email Addresses: bdebi000@citymail.cuny.edu, ylin026@citymail.cuny.edu
 ;;; Spring 2022
 
