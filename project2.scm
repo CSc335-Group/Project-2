@@ -100,27 +100,95 @@
 ;;; -(R' ^ -S').
 ;;; ------------------------------------------------------------------------------------------------------------------
 
+;;; TEST INPUTS
+(define e1 (make-or 'x 'y))
+(define e2 (make-imply 'x 'z))
+(define e3 (make-and 'x 'y))
+(define e4 (make-not 'x))
+(define e5 (make-not (make-and 'x 'y)))
+(define e6 (make-not e1))
+(define e7 (make-and e1 e2))
+
+;;; (simplifier e1) => (((x -) ^ (y -)) -)
+;;; (simplifier e2) => ((x ^ (z -)) -)
+;;; (simplifier e5) => ((x ^ y) -)
+
 
 ;;; PART 2: BACK-END
 ;;; ------------------------------------------------------------------------------------------------------------------
-;;; interpreter
-;;;(pair? (cdr '((x #t) (y #t))))
 
-;;;(eq? 'x (car '(x #t)))
 
-;;;(define (tst x)
-;;;  (eq? x (car '(y #t))))
+;;; LOOKUP FUNCTION
+
+;;; SPECIFICATION
+;;; Pre-condition: input a symbol x, and a association list alist
+;;; Post-condition: if x is in the association list, then it will output its value,
+;;;   if x is not iin the  association list, then it will return a null list '()
+
+;;; DESIGN IDEA
+;;; iterative procedure
+;;; Check every pair of of association list, say current pair = (car alist), for the termination, if x is the first element of current pair,
+;;; then it will terminates and return the value of second elements of current pair, and if we check through the list, the x does not appear
+;;; in any pair of the association list
+
+;;; orignal ALIST
+;;; ------------------------------------------
+;;; already checked pairs | not checked yet
+;;; ------------------------------------------
+;;;                     (alist head ....     )
 
 (define (lookup x alist)
   (cond ((eq? (caar alist) x) (cadar alist)) ;; if x is in current pair
         ((eq? (cdr alist) '()) '()) ;; if x is not in the list
         (else (lookup x (cdr alist)))))
 
-;;; imply function
+;;; PROOF
+;;; we let original accociation list to be ALIST, 
+;;; guess invariant: x appears in any pair of original ALIST iff x appears in alist
+
+;;; Strong enough? when the program start, alist = ALIST, then our GI is true.
+;;; Weak enough? when the program terminates, as we mentioned in design idea, there are two cases cause the program terminates
+;;;   1. x was fould in current head pair of alist, x must appears in the same pair of ALIST, then our GI is true
+;;;   2. alist contains only a element of a pair and x is not appear in the pair, x is not in the orignal ALIST, our GI is true
+;;; Preservable? We assume that GI is true before each iterative call, while the program does not terminates, that means x is not in current head pair,
+;;;   and alist does contains at least 2 pairs, then for the next call new alist becomes (cdr alist), then our GI: x appears in any pair of ALIST iff x
+;;;   appears in alist still maintained, since previous head pair does not contains x.
+
+;;; Q.E.D
+
+;;; TEST DATA
+;;; (lookup 'x '((x #f) (y #t) (z #f))) => #f
+;;; (lookup 'y '((x #f) (y #t) (z #f))) => #t
+;;; (lookup 'z '((x #f) (y #t) (z #f))) => #f
+;;; (lookup 'w '((x #f) (y #f) (z #f))) => ()
+
+
+
+;;; IMPLY FUNCTION
+
+;;; SPECIFICATION
+;;; Pre-condition: input 2 boolean value p and q
+;;; Post-condition: returns the boolean value of p implies q
+
+;;; USE p=>q <=> -pvq
 (define (imply p q)
   (or (not p) q))
 
-;;; value the expression
+;;; TEST INPUTS
+;;; (imply #t #t) => #t
+;;; (imply #t #f) => #f
+;;; (imply #f #t) => #t
+;;; (imply #f #f) => #t
+
+
+;;; VALUE FUNCTION
+
+;;; SPECIFICATION:
+;;; Pre-Condition: inputs a proposition e that was created using the constructors and a valid association list alist
+;;;   (every symbol x appears in e can be foulded with its associated value in alist)
+;;; Post-Condition: it will returns the value of e that each symbol of e is evaluated to its aoociated value in alist
+
+;;; CODE:
 (define (value e alist)
   (cond ((symbol? e) (lookup e alist))
         ((not (not? e))
@@ -131,6 +199,37 @@
         (else
          (let ((first-op (first-operand e)))
            (not (value first-op alist))))))
+
+;;; STRUCTURAL INDUCTION PROOF:
+
+;;; Let P to be the least class that contains all the infix propersition
+
+;;; BASIS:
+;;; If the proposition is just a symbol, then we can directly check alist using lookup function. Since we assume our alist to be valid
+;;; that is, every symbol x appears in e can be founded with its associated value in alist, so (lookup e alist) will return the boolean
+;;; value of e when e is a symbol which is correct.
+
+;;; INDUCTION HYPOTHESIS (IH)
+;;; For any porposition p \in P, assume the value of all the components of p are true
+
+;;; INDUCTION STEP:
+;;; Here we have 2 cases:
+;;;  1. p is a infix proposition with 2 operands (in other words, p is either an AND (^), OR (v), or IMPLY (=>)
+;;;     proposition). r and s are components of p that p = (r op s). By the IH, we know the value of r and s are all true. 
+;;;     Then, since we have all the corrected value of r and s, then the value of p is going to be (operator (value of r) (value of s))
+;;;     which is true
+;;;  2. p is an infix proposition with only one operand (p is NOT (-)). let r to be a component of p that p = -r. By the IH,
+;;;     we know the value of r is true. then the value of p is going to be (not (value of r)) which is correct!
+
+
+;;; Q.E.D
+
+;;; TEST INPUTS
+;;; (value '((x v y) ^ (x => z)) '((x #t) (y #f) (z #t))) => #t
+;;;          (T v F) ^ (T => T) = T
+;;; (value '((x v y) -) '((x #f) (y #t))) => #f
+;;;         (- (F v T)) = F
+
 
 ;;; ------------------------------------------------------------------------------------------------------------------
 
@@ -147,7 +246,6 @@
 (define (wrapper e alist)
   (value (simplifier e) alist))
 
-
 ;;; TEST INPUTS
 (define l1 '((x #f) (y #f) (z #t)))
 
@@ -159,8 +257,10 @@
 (define e6 (make-not e1))
 (define e7 (make-and e1 e2))
 
-(value (simplifier e7) l1)
-(value (simplifier e2) l1)
+;;; (value e7 l1) => #f
+;;; (wrapper e7 l1) => #f
+;;; (value e2 l1) => #t
+;;; (wrapper e2 l1) => #t
 
 ;;; ------------------------------------------------------------------------------------------------------------------
 
@@ -207,9 +307,9 @@
 ;;; TEST INPUTS:
 ;;;(define l1 '((x #f) (y #f) (z #t)))
 
-;;;(aList-complete '((((x -) ^ (y -)) -) ^ ((x ^ (z -)) -)) l1)
-;;;(aList-complete '((((x -) ^ (p -)) -) ^ ((x ^ (z -)) -)) l1)
+;;;(aList-complete '((((x -) ^ (y -)) -) ^ ((x ^ (z -)) -)) l1) => #t
+;;;(aList-complete '((((x -) ^ (p -)) -) ^ ((x ^ (z -)) -)) l1) => #f
 
-;;;(aList-complete '((x ^ (z -)) -) l1)
-;;;(aList-complete '((x ^ (q -)) -) l1)
+;;;(aList-complete '((x ^ (z -)) -) l1) => #t
+;;;(aList-complete '((x ^ (q -)) -) l1) => #f
 ;;; ------------------------------------------------------------------------------------------------------------------
